@@ -1,0 +1,242 @@
+// Created: 2021/01/19 17:03:21
+// Last modified: 2021/05/11 22:33:40
+
+# Module 1: Cloud fundamentals & AWS Foundations 
+Cloud Basic concepts   
+        What is AWS?       
+        Why use AWS?       
+        Who uses AWS?
+
+# Module 2: AWS Solution Architecture
+SA Briefly definition  
+    AWS services       
+    AWS regions       
+    Shared security model
+    Quiz
+
+# Module 3 AWS Building Blocks
+# Parte 1
+# Compute
+EC2 
+    ECS/EKS 
+    AWS Fargate 
+        Elasticidad contenedores
+    AWS Lambda # Function as a service 
+Notes:
+Un servicio mas administrado es mas barato un servicio menos administrado es mas barato.
+Velocidad
+    Disco efimero
+    EBS
+    S3
+# Storage
+EBS
+    Block storages volumes for use with Amazon EC2 instances
+    E.G. HDD externo
+    Velocidad lectura/escritura mas lenta que un interno de una instancia.
+    Snapshots
+S3
+    Amazon simple storage service
+    hosting
+    backup
+    Streaming
+    Data lakes
+    Mas caro pero mejor repuesta
+    Classes:
+        S3 Standard
+        S3 Intelligent Tiering
+        S3 Standard-IA (Infrequent Access)
+        S3 One Zone-IA (Infrequent Access) Una sola zona
+        S3 Glacier
+        S3 Glacier Deep Archive
+S3 Glacier
+    Almacenamiento por mucho tiempo
+    Long term usage
+    Data archiving
+    Cons:
+    Al menos 30 dias
+    Si quieres rapido tiene un costo especial
+    Data lifecycle automation
+VPC Networking
+    No tiene acceso a internet por defecto
+    Minimo dos ambientes
+    4 maneras de conectar data center con AWS
+    Internet inseguro
+        Velocidad
+    VPN seguro
+        Lento
+    Direct Connect Partner
+ElB Elastic Load Balancing
+    NLB Mas rapido
+Cloudfront Content delivery network
+Route 53 
+    DNS
+    100% disponibilidad SLA
+# Parte 2
+Databases
+RDS 
+    Aurora 
+    DynamoDB 
+    ElastiCache 
+Security
+IAM 
+KMS
+    Keys
+    Logs
+    WAF 
+    Shield 
+Admin
+    CloudWatch 
+    CloudTrail 
+    Cloudformation 
+    Configuration 
+# Module 4 IAM (Identity and Access Management) 
+IAM Essentials
+Policies are written in JSON
+Is not recommended to use root account
+        IAM Policies
+            Users
+            Groups
+            Roles
+        IAM Access Keys
+        Securing Your Account
+        IAM Roles
+Presentacion modulo 4 
+      Module 4: Identity and Access Management (IAM)
+
+# Module 5: Server-Based Compute (EC2)
+EC2 Architecture 
+        Instance Types and Sizes 
+        EC2 Storage Architecture 
+        EBS Snapshots 
+        Security Groups 
+        Instance Metadata 
+        AMI 
+        Bootstrap 
+        Quiz
+        Practice
+
+AWS Cli
+https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html
+
+Create Access Key
+https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html
+https://console.aws.amazon.com/iam/home#/security_credentials  
+
+
+# Key generation
+# no passphrase
+ssh-keygen -t rsa -b 2048 -C "pepebec"
+pepebec
+
+Commands:
+# Configure CLI
+aws configure
+
+AWS Access Key ID [None]: 
+AWS Secret Access Key [None]:
+
+# Import key
+aws ec2 import-key-pair --key-name "pepebec" --public-key-material fileb://~/aws/pepebec.pub
+
+# Describe keys
+aws ec2 describe-key-pairs --key-names "pepebec"
+
+# Get AWS CLI version
+aws --version
+
+# Create Security Groups
+
+# This example describes the attributes for your AWS account.
+aws ec2 describe-account-attributes
+
+# Get default VPC_ID
+aws ec2 describe-vpcs --filters 'Name=isDefault,Values=true'
+
+# Get default VPC_ID and store the output 
+$VPC_ID = aws ec2 describe-vpcs --filters 'Name=isDefault,Values=true' | jq -r '.Vpcs[0].VpcId'
+echo $VPC_ID
+
+# Create the security group
+aws ec2 create-security-group --group-name MySecurityGroup --description "Security Group for EC2" --vpc-id $VPC_ID
+
+# Get security group
+aws ec2 describe-security-groups --group-names MySecurityGroup
+
+$SECURITY_GROUP_ID = aws ec2 describe-security-groups --group-names MySecurityGroup | jq -r '.SecurityGroups[0].GroupId'
+echo $SECURITY_GROUP_ID
+
+# Get Subnets
+aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" 'Name=availability-zone,Values=us-east-1a'
+
+$SUBNET_ID = aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" 'Name=availability-zone,Values=us-east-1a' | jq -r '.Subnets[0].SubnetId'
+
+# Add ingress rule
+$MY_IP = 187.212.140.52
+aws ec2 authorize-security-group-ingress --group-name MySecurityGroup --protocol tcp --port 22 --cidr 187.212.140.52/32
+aws ec2 authorize-security-group-ingress --group-name MySecurityGroup --protocol tcp --port 80 --cidr 187.212.140.52/32
+
+# Instances
+# Get Ubuntu AMI from official owner 099720109477
+aws ec2 describe-images --owners 099720109477 --filters 'Name=name, Values=ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*' --query 'sort_by(Images,&CreationDate)[-1].ImageId'
+
+$UBUNTU_AMI = aws ec2 describe-images `
+--owners 099720109477  `
+--filters 'Name=name, Values=ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*' `
+--query 'sort_by(Images,&CreationDate)[-1].ImageId'
+echo $UBUNTU_AMI
+
+# Create instance 
+# User date with userdata.sh script
+code ./userdata.sh
+    #! /bin/bash
+    sudo apt-get update
+    sudo apt-get install -y nginx
+    MY_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+    echo "Hello from MyEc2Instance with the IP $MY_IP" > /var/www/html/index.html
+
+aws ec2 run-instances --image-id $UBUNTU_AMI --count 1 --instance-type "t2.micro" --key-name pepebec --security-group-ids $SECURITY_GROUP_ID --subnet-id $SUBNET_ID --user-data fileb:userdata.sh --tag-specification 'ResourceType=instance, Tags=[{Key=Name, Value=MyEC2Instance}]'
+
+# Describe Image 
+aws ec2 describe-instances --filters "Name=tag:Name,Values=MyEC2Instance"
+
+ssh -i .\pepebec ubuntu@23.20.128.239
+
+# Create a Snapshot 
+
+# Get EBS volumen from instance
+$VOLUME_ID = aws ec2 describe-instances --filters 'Name=tag:Name,Values=MyEC2Instance' 'Name=instance-state-name,Values=running' | jq -r '.Reservations[0].Instances[0].BlockDeviceMappings[0].Ebs.VolumeId'
+echo $VOLUME_ID
+
+# Create a Snapshot 
+aws ec2 create-snapshot --description "MySnapshot" --volume-id $VOLUME_ID
+
+# Describe snapshot
+aws ec2 describe-snapshots --filters 'Name=description,Values=MySnapshot'
+
+# Register Image
+aws ec2 register-image --name 'MyImage' --description 'MyCustomAMI' --architecture 'x86_64' --virtualization-type 'hvm' --ena-support --root-device-name '/dev/sda1' --block-device-mappings file://~/aws/device-mapping.json
+
+# Describe own images
+aws ec2 describe-images --owners self --filters "Name=name,Values=MyImage"
+
+# Retrieve the ID of the Instance 
+$INSTANCE_ID = aws ec2 describe-instances --filters "Name=tag:Name,Values=MyEC2Instance" | jq -r '.Reservations[0].Instances[0].InstanceId'
+echo $INSTANCE_ID
+
+# Destroy instance
+aws ec2 terminate-instances --instance-ids $INSTANCE_ID
+
+# New instance from custom AMI
+$IMAGE_ID = aws ec2 describe-images --owners self --filters "Name=name,Values=MyImage" | jq -r '.Images[0].ImageId'
+echo $IMAGE_ID
+$SECURITY_GROUP_ID = aws ec2 describe-security-groups --group-names MySecurityGroup | jq -r '.SecurityGroups[0].GroupId'
+echo $SECURITY_GROUP_ID
+$VPC_ID = aws ec2 describe-vpcs --filters 'Name=isDefault,Values=true' | jq -r '.Vpcs[0].VpcId'
+echo $VPC_ID
+$SUBNET_ID = aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" 'Name=availability-zone,Values=us-east-1a' | jq -r '.Subnets[0].SubnetId'
+echo $SUBNET_ID
+
+
+# Module 6: Serverless
+# Roles son para servicios de Amazon
+# Lambas es gratis
