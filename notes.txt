@@ -1,5 +1,4 @@
-// Created: 2021/01/19 17:03:21
-// Last modified: 2021/05/11 22:33:40
+# AWS Training
 
 # Module 1: Cloud fundamentals & AWS Foundations 
 Cloud Basic concepts   
@@ -199,6 +198,7 @@ aws ec2 run-instances --image-id $UBUNTU_AMI --count 1 --instance-type "t2.micro
 # Describe Image 
 aws ec2 describe-instances --filters "Name=tag:Name,Values=MyEC2Instance"
 
+# Connect to instance 
 ssh -i .\pepebec ubuntu@23.20.128.239
 
 # Create a Snapshot 
@@ -236,6 +236,14 @@ echo $VPC_ID
 $SUBNET_ID = aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" 'Name=availability-zone,Values=us-east-1a' | jq -r '.Subnets[0].SubnetId'
 echo $SUBNET_ID
 
+
+# Run instance
+
+# Create instance without user-data
+aws ec2 run-instances --image-id $UBUNTU_AMI --count 1 --instance-type "t2.micro" --key-name pepebec --security-group-ids $SECURITY_GROUP_ID --subnet-id $SUBNET_ID --tag-specification 'ResourceType=instance, Tags=[{Key=Name, Value=MyEC2Instance2}]'
+
+# Describe new instance
+aws ec2 describe-instances --filters "Name=tag:Name,Values=MyEC2Instance2"
 
 # Module 6: Serverless
 # Roles son para servicios de Amazon
