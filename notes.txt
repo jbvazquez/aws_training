@@ -20,6 +20,10 @@ EC2
     ECS/EKS 
     AWS Fargate 
         Elasticidad contenedores
+        ALB Contenedores HTTPS
+        NLB Hacia para direcciones IP's 
+        CLB Sencillo
+        Performance is the goal of Loud
     AWS Lambda # Function as a service 
 Notes:
 Un servicio mas administrado es mas barato un servicio menos administrado es mas barato.
@@ -72,7 +76,8 @@ Route 53
     100% disponibilidad SLA
 # Parte 2
 Databases
-RDS 
+RDS
+Servidor de base de datos
     Aurora 
     DynamoDB 
     ElastiCache 
@@ -97,6 +102,7 @@ Is not recommended to use root account
             Groups
             Roles
         IAM Access Keys
+            IAM Users Security Credentials
         Securing Your Account
         IAM Roles
 Presentacion modulo 4 
@@ -130,6 +136,8 @@ pepebec
 Commands:
 # Configure CLI
 aws configure
+
+# Config is stored in \username\.aws\
 
 AWS Access Key ID [None]: 
 AWS Secret Access Key [None]:
@@ -248,3 +256,115 @@ aws ec2 describe-instances --filters "Name=tag:Name,Values=MyEC2Instance2"
 # Module 6: Serverless
 # Roles son para servicios de Amazon
 # Lambas es gratis
+
+# Module 10 Logging and Monitoring
+Three Pillars of Observability
+Metrics
+    CPU usage
+    Disk
+    Space
+    Latency
+Traces
+    Representation of distribute events that enconde end-to-end requests
+    Que servicios estan siendo ineficientes o problematicos
+Logs
+    Inmutable timestamped record of events
+
+Monitoring on AWS
+    Performance & Availability
+    CloudWatch
+        Metrics
+        Logs and Events
+        Alarms
+        Dashboards
+            View operational status and identify issues
+    CloudTrail
+    Query * API Call
+    Who
+    When
+    What
+    Which
+    Where
+    
+Es posible monitorear el estado de los servicios que estén instalados en una instancia EC2 a traves de CloudWatch ejemplos: nginx o apache?
+CloudWatch Agente
+CloudTrail
+
+# Module 12
+# Deployment
+# Part 1
+# Amazon EKS
+Containers
+    Similar to a vm but more like a virtual operative environment
+    A virtual operative environment with everything that software need to run.
+    Is standardized e.g. docker.hub
+    Microservices approach
+        Applications are created using independient stateless components, or Microservices,
+        runing in containers
+        Layer
+    Docker
+        Microservices
+            Monolithic Architecture vs Microservices Architecture
+            Docker no brinda escalabilidad
+            Orchestration is container escalability
+            Sustitución de componentes de manera fácil
+            Module upgrade
+Kubernetes
+    Greek word meaning of helmsman or captain of a ship or K8s
+    Deploy, manage and maintains your containers.
+    Based on Google's running containers in production.
+    HA restar or replaced failed containers.
+    Deploy hundreds of thousands of containers with a single command
+    Scalability up and down
+    Lod Balancing
+    Service Discovery
+    Most popular orchestration tool
+    Enterprise-level features
+    It can be difficult to build, configure, and get started.
+K8s architecture
+    Master - Control Plane: Configuration Scheduling Decisions
+    Node1 Node2 Node3
+    Workers
+
+    Master
+        Monitor state, performance and health.
+        Failed containers are replaced.
+        If node fails, its workload can be redistributed.
+
+High Availability
+
+EKS
+Compatible with K8s
+Provision and scale your cluster
+Self-healing
+
+Server-less option
+    AWS Fargate
+Workshop
+    Deploy AWS EKS
+
+# Module 12
+# Deployment
+# Part 2
+AWS Elastic Beanstalk
+    Handle Deployments 
+
+Deployments
+Section 6
+Web Applications up and running
+
+
+Benefits
+Fast and simple to start using
+
+NOTA:
+Elasticidad es subir y bajar recursos
+escalabilidad solo arriba
+
+QA
+Que metodo seria el mas metodo mas viable para una simple Web
+cSS
+html
+js
+
+S3 - Basico simple web server
